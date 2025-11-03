@@ -71,7 +71,7 @@ def fetch_gen1_pokemon_from_api():
     
     return pokemon_list
 
-def get_gen1_pokemon_data(json_filename="gen1output.json"):
+def get_gen1_pokemon_data(json_filename="pokeJsons/gen1output.json"):
 
     # Different function for grabbing data locally first, if it doesn't exist yet, it will call the API instead
 
