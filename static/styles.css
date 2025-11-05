@@ -41,10 +41,13 @@ form {
 	justify-content: center;
 	gap: 10px;
 	margin-bottom: 30px;
+    padding-left: 50px;
+    padding-right: 50px;
 }
 
 input[type="text"] {
-	padding: 10px;
+    padding-left: 10px;
+    padding: 10px;
 	border-radius: 6px;
 	border: 1px solid #444;
 	background-color: #1e1e1e;
@@ -101,10 +104,12 @@ button:hover {
 /* --- Pokémon List Grid --- */
 .pokemon-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
     justify-content: center;
     gap: 30px;
     padding: 20px 0;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 /* --- Pokémon Card --- */
