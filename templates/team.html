@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Team Builder • Pocket Pokédex</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='team.css') }}" />
+</head>
+
+<body class="team-page">
+    <div class="team-container">
+
+        <header class="team-header">
+            <h1>Team Builder</h1>
+            <p class="team-subtitle">
+                Build up to six Pokémon. Search below and click “Add to Team”.
+            </p>
+        </header>
+
+
+        <section class="team-controls">
+            <div class="team-name-group">
+                <label for="team-name-input">Team:</label>
+                <input id="team-name-input" type="text" placeholder="Team name (e.g., Kanto Sweep)" />
+                <span id="team-status" class="team-status">(unsaved)</span>
+            </div>
+
+            <div class="team-buttons">
+                <button id="save-team-btn" type="button" class="btn btn-primary">
+                    Save Team
+                </button>
+                <button id="export-team-btn" type="button" class="btn btn-secondary">
+                    Export JSON
+                </button>
+                <button id="clear-team-btn" type="button" class="btn btn-danger">
+                    Clear Team
+                </button>
+            </div>
+        </section>
+
+        <section class="team-slots" id="team-slots">
+            <div class="team-slot" data-index="0">
+                <div class="slot-label">#1</div>
+                <div class="slot-content">
+                    <span class="slot-empty">Empty Slot</span>
+                </div>
+            </div>
+            <div class="team-slot" data-index="1">
+                <div class="slot-label">#2</div>
+                <div class="slot-content">
+                    <span class="slot-empty">Empty Slot</span>
+                </div>
+            </div>
+            <div class="team-slot" data-index="2">
+                <div class="slot-label">#3</div>
+                <div class="slot-content">
+                    <span class="slot-empty">Empty Slot</span>
+                </div>
+            </div>
+            <div class="team-slot" data-index="3">
+                <div class="slot-label">#4</div>
+                <div class="slot-content">
+                    <span class="slot-empty">Empty Slot</span>
+                </div>
+            </div>
+            <div class="team-slot" data-index="4">
+                <div class="slot-label">#5</div>
+                <div class="slot-content">
+                    <span class="slot-empty">Empty Slot</span>
+                </div>
+            </div>
+            <div class="team-slot" data-index="5">
+                <div class="slot-label">#6</div>
+                <div class="slot-content">
+                    <span class="slot-empty">Empty Slot</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search -->
+        <section class="team-search-section">
+            <form id="team-search-form" class="team-search-form">
+                <input id="team-search-input" type="text" placeholder="Search Pokémon (e.g., pikachu)" />
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+            <p id="team-error" class="error hidden"></p>
+        </section>
+
+       
+        <section id="team-result" class="team-result"></section>
+
+       
+        <template id="team-card-template">
+            <div class="team-preview">
+            
+                <div class="pokemon-card" data-main-type="">
+                    <!-- Card Header -->
+                    <div class="card-header">
+                        <h3 class="pokemon-name"></h3>
+                        <div class="pokemon-hp"><span>HP</span></div>
+                    </div>
+
+                    <!-- Card Image -->
+                    <div class="card-image-container">
+                        <div class="pokemon-id-badge"></div>
+                        <img src="" alt="" loading="lazy">
+                    </div>
+
+                    <!-- Type Section -->
+                    <div class="type-section">
+                        <div class="type-label">Type</div>
+                        <div class="pokemon-types"></div>
+                    </div>
+
+                    <!-- Abilities Section -->
+                    <div class="abilities-section">
+                        <h4>Abilities</h4>
+                        <div class="ability-list"></div>
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="card-footer">
+                        <span>© Pokémon</span>
+                    </div>
+                </div>
+
+                <!-- Add to team button -->
+                <button type="button" class="btn btn-primary add-to-team-btn">
+                    Add to Team
+                </button>
+            </div>
+        </template>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='team.js') }}"></script>
+</body>
+
+</html>

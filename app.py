@@ -18,7 +18,7 @@ app = Flask(__name__)
 def index():
 	return render_template("index.html")
 
-# Gen 1 route! It will render the gen1.html template with all 151 Pokemon, 
+# Gen 1 route! It will render the gen1.html template with all 151 Pokemon,
 @app.get("/gen1")
 def gen1():
 	# Fetch all Gen 1 Pokemon data
@@ -75,12 +75,19 @@ def gen8():
 	# Render gen8 template with the pokemon data being passed into it from Flask, please read how Flask is handling this
 	return render_template("generation.html", pokemon_list=pokemon_data, title="Generation 8 Pokémon", subtitle="All 96 Gen 8 Pokémon")
 
+
 @app.get("/gen9")
 def gen9():
-	# Fetch all Gen 9 Pokemon data
-	pokemon_data = get_gen9_pokemon_data()
-	# Render gen9 template with the pokemon data being passed into it from Flask, please read how Flask is handling this
-	return render_template("generation.html", pokemon_list=pokemon_data, title="Generation 9 Pokémon", subtitle="All 120 Gen 9 Pokémon")
+    # Fetch all Gen 9 Pokemon data
+    pokemon_data = get_gen9_pokemon_data()
+    # Render gen9 template with the pokemon data being passed into it from Flask, please read how Flask is handling this
+    return render_template("generation.html", pokemon_list=pokemon_data, title="Generation 9 Pokémon", subtitle="All 120 Gen 9 Pokémon")
+
+# Team Builder page
+@app.get("/team")
+def team():
+    return render_template("team.html", title="Team Builder")
+
 
 # This is the API route! It will return a JSON response from our call. 502 is bad gateway. set the timeout to 15 seconds but can change as needed
 @app.get("/api/pokemon/<string:name>")
@@ -92,4 +99,4 @@ def searchPokemon(name):
 
 
 if __name__ == "__main__":
-	app.run(host="0.0.0.0", port=5000, debug=True)
+	app.run(host="0.0.0.0", port=5001, debug=True)
