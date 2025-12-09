@@ -1,9 +1,9 @@
 import json
-from flask import Flask, jsonify, render_template, session, redirect, request
+from flask import Flask, jsonify, render_template, request, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from routes.gen1 import get_gen1_pokemon_data
 from routes.index import get_pokemon
-from routes.gen2 import get_gen2_pokemon_data
+from routes.gen2 import get_gen2_pokemon_data 
 from routes.gen3 import get_gen3_pokemon_data
 from routes.gen4 import get_gen4_pokemon_data
 from routes.gen5 import get_gen5_pokemon_data
@@ -17,10 +17,11 @@ import sqlite3
 app = Flask(__name__)
 app.secret_key = "secret-key-tochange"
 
-#Connect to database
+# Connects to database
 def db():
 	return sqlite3.connect("users.db", check_same_thread=False)
 
+# Creates database tables for users and saved-teams
 def init_db():
 	conn = sqlite3.connect("users.db")
 	conn.execute("""
@@ -44,6 +45,7 @@ def init_db():
 	conn.commit()
 	conn.close()
 
+# Returns users' email if logged into session
 def current_user():
 	return session.get("email")
 
@@ -117,17 +119,25 @@ def gen9():
     # Render gen9 template with the pokemon data being passed into it from Flask, please read how Flask is handling this
     return render_template("generation.html", pokemon_list=pokemon_data, title="Generation 9 Pokémon", subtitle="All 120 Gen 9 Pokémon")
 
+# Team Builder page
+@app.get("/team")
+def team():
+    return render_template("team.html", title="Team Builder")
+
 # Account page
 @app.get("/account")
-def account():
+def account(): 
+	# Redirects to login page if not logged-in
 	if "email" not in session:
 		return redirect("/login")
-	return render_template("account.html", title="Account Information", user=session.get("first_name"), email=session.get("email"))
+	return render_template("account.html", title="Account Information", user=session.get("first_name"), email=session.get("email"), ln = session.get("last_name"))
 
+# Initial Login page
 @app.get("/login")
 def login_page():
     return render_template("account.html", user=None)
 
+# Login verification
 @app.post("/login")
 def login():
 	email = request.form.get("email")
@@ -147,6 +157,7 @@ def login():
 	session["last_name"] = data[2]
 	return render_template("account.html", user=session["first_name"], email=session["email"])
 
+# Create account page
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
 	if request.method == "GET":
@@ -156,6 +167,10 @@ def signup():
 	last_name = request.form.get("last_name")
 	email = request.form.get("email")
 	password = request.form.get("password")
+	password2 = request.form.get("password2")
+	if password != password2:
+		return render_template("signup.html", error="Passwords do not match")
+
 	hashed_pw = generate_password_hash(password)
 
 	try:
@@ -171,15 +186,90 @@ def signup():
 	session["last_name"] = last_name
 	return redirect("/account")
 
+# Logout function
 @app.get("/logout")
 def logout():
 	session.clear()
 	return redirect("/account")
 
-# Team Builder page
-@app.get("/team")
-def team():
-    return render_template("team.html", title="Team Builder")
+# Save team to account
+@app.post("/team/save")
+def save_team():
+	if "user_id" not in session:
+		return {"error": "Not logged in"}, 401
+	
+	user_id = session["user_id"]
+	data = request.get_json()
+	if not data:
+		return {"error": "No data provided"}, 400
+	name = data.get("name", "Untitled Team")
+	members = json.dumps(data.get("members", []))
+	conn = db()
+	conn.execute("INSERT INTO teams (user_id, name, members) VALUES (?, ?, ?)",(user_id, name, members)
+	)
+	print("Saved team")
+	conn.commit()
+	conn.close()
+	return jsonify({"success": True})
+
+# Loads previously saved team on teambuilder page
+@app.get("/team/load")
+def load_team():
+	if "user_id" not in session:
+		return jsonify({"members": []})
+	
+	user_id = session["user_id"]
+	conn = db()
+	team = conn.execute("SELECT name, members FROM teams WHERE user_id = ? ORDER BY team_id DESC LIMIT 1", (user_id,)).fetchone()
+	conn.close()
+
+	if not team:
+		return jsonify({"members": []})
+	return jsonify({
+		"name": team[0],
+		"members": json.loads(team[1])
+	})
+
+# Delivers teams' data to Account page
+@app.get("/account/teams")
+def account_teams():
+	email = session.get("email")
+	if not email:
+		return jsonify([])
+	conn = db()
+	data = conn.execute("""
+					 SELECT teams.team_id, teams.name, teams.members FROM teams JOIN users ON teams.user_id = users.id WHERE users.email = ? ORDER BY teams.team_id""",(email,)).fetchall()
+	conn.close()
+	teams = []
+	for row in data:
+		team_id = row[0]
+		team_name = row[1]
+		members_raw = row[2]
+		try:
+			members = json.loads(members_raw or "[]")
+		except json.JSONDecodeError:
+			members = []
+		teams.append({
+			"team_id": team_id,
+			"name": team_name,
+			"members": members
+		})
+	return jsonify(teams)
+
+# Delete saved team from account
+@app.route("/account/teams/<int:team_id>", methods=["DELETE"])
+def delete_team(team_id):
+	user_id = session["user_id"]
+	conn = db()
+	cursor = conn.cursor()
+	cursor.execute(
+		"DELETE FROM teams WHERE team_id = ? AND user_id = ?", (team_id, user_id))
+	conn.commit()
+	rowcount = cursor.rowcount
+	conn.close()
+	if rowcount == 0:
+		return jsonify({"success": False, "error": "Team not found"}), 404
+	return jsonify({"success": True})
 
 
 # This is the API route! It will return a JSON response from our call. 502 is bad gateway. set the timeout to 15 seconds but can change as needed
@@ -194,4 +284,3 @@ def searchPokemon(name):
 if __name__ == "__main__":
 	init_db()
 	app.run(host="0.0.0.0", port=5001, debug=True)
-
