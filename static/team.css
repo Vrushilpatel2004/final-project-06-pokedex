@@ -3,8 +3,8 @@
 ---------------------------------- */
 
 .team-page {
-    background: radial-gradient(circle at top, #0d1a3d, #040812 60%);
-    color: #ffffff;
+    background-color: #121212;
+	color: #ffffff;
 }
 
 .team-main {
