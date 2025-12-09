@@ -15,6 +15,8 @@
 
   const STORAGE_KEY = "pocketPokedex-team-current";
 
+  const userLoggedIn = window.userLoggedIn || false;
+
   const typeBorderColors = {
     normal: "#A8A878",
     fire: "#F08030",
@@ -203,14 +205,36 @@
     }
   }
 
-  function saveCurrentTeam() {
+  async function saveCurrentTeam() {
+    console.log("saveCurrentTeam START");
     const name = teamNameInput.value.trim() || "Untitled Team";
     const payload = {
       name,
       members: currentTeam.filter(Boolean),
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    teamStatusEl.textContent = `(${name} saved locally)`;
+
+    if (userLoggedIn) {
+      console.log("User logged in");
+      try {
+        const res = await fetch("/team/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("Failed to save team");
+        const data = await res.json();
+        if (data.success) {
+          teamStatusEl.textContent = `(${name} saved to account)`;
+        }  
+      } catch (err) {
+        console.error(err);
+        teamStatusEl.textContent = "(Failed to save)"
+      }
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      teamStatusEl.textContent = `(${name} saved locally)`;
+      console.log("User not logged in")
+    }
   }
 
   function exportCurrentTeam() {
@@ -239,22 +263,26 @@
     teamStatusEl.textContent = "(unsaved)";
   }
 
-  (function loadSavedTeam() {
+  (async function loadSavedTeam() {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return;
-      const parsed = JSON.parse(saved);
-      teamNameInput.value = parsed.name || "";
+      if (window.userLoggedIn) {
+        const res = await fetch("/team/load");
+        const data = await res.json();
+        if (!data?.members) return;
+        teamNameInput.value = data.name || "";
+        currentTeam = [null, null, null, null, null, null]; 
+        (data.members || []).forEach((p, idx) => {
+          if (idx < currentTeam.length) currentTeam[idx] = p;
+        });
+        renderTeam();
+        teamStatusEl.textContent = `(${data.name || "saved"})`;
+    } else {
       currentTeam = [null, null, null, null, null, null];
-      (parsed.members || []).forEach((p, idx) => {
-        if (idx < currentTeam.length) currentTeam[idx] = p;
-      });
-      renderTeam();
-      teamStatusEl.textContent = `(${parsed.name || "saved"})`;
-    } catch (e) {
-      console.error("Failed to load saved team", e);
     }
-  })();
+  } catch (e) {
+    console.error("Failed to load saved team", e);
+  }   
+})();
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
