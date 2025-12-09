@@ -1,4 +1,5 @@
 import json
+import os
 from flask import Flask, jsonify, render_template, session, redirect, request
 from werkzeug.security import generate_password_hash, check_password_hash
 from routes.gen1 import get_gen1_pokemon_data
@@ -193,5 +194,6 @@ def searchPokemon(name):
 
 if __name__ == "__main__":
 	init_db()
-	app.run(host="0.0.0.0", port=5001, debug=True)
+	port = int(os.environ.get("PORT", 5001))
+	app.run(host="0.0.0.0", port=port, debug=False)
 
